@@ -1,0 +1,2635 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockSentry — Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #0A0F1E;
+            color: #F9FAFB;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        /* ── COLORS ── */
+        :root {
+            --bg: #0A0F1E;
+            --card: #111827;
+            --border: #1F2937;
+            --gold: #C9A84C;
+            --gold-hover: #D4B85A;
+            --navy: #1E3A5F;
+            --text: #F9FAFB;
+            --muted: #9CA3AF;
+            --red: #EF4444;
+            --green: #22C55E;
+            --amber: #F59E0B;
+        }
+
+        /* ── SCREENS ── */
+        .screen {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* ── LOGIN ── */
+        #screen-login {
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background-color: var(--bg);
+        }
+
+        .login-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px 36px;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .login-logo {
+            width: 48px;
+            height: 48px;
+            background: var(--gold);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--bg);
+            margin-bottom: 24px;
+        }
+
+        .login-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .login-sub {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 28px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: #0A0F1E;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            margin-bottom: 16px;
+        }
+
+        .form-input:focus {
+            border-color: var(--gold);
+        }
+
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .role-btn {
+            background: #0A0F1E;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .role-btn:hover {
+            border-color: var(--gold);
+        }
+
+        .role-btn.selected {
+            border-color: var(--gold);
+            background: rgba(201, 168, 76, 0.1);
+        }
+
+        .role-btn .role-icon {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        .role-btn .role-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .role-btn.selected .role-name {
+            color: var(--gold);
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: var(--gold);
+            color: var(--bg);
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: var(--gold-hover);
+        }
+
+        .error-msg {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: var(--red);
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        /* ── APP SHELL ── */
+        #screen-app {
+            flex-direction: column;
+            background-color: var(--bg);
+        }
+
+        /* ── HEADER ── */
+        .app-header {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0 20px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo {
+            width: 32px;
+            height: 32px;
+            background: var(--gold);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--bg);
+        }
+
+        .header-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .header-warehouse {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .shift-status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .shift-status-badge.no-shift {
+            background: rgba(156, 163, 175, 0.1);
+            color: var(--muted);
+            border: 1px solid rgba(156, 163, 175, 0.2);
+        }
+
+        .shift-status-badge.open {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            animation: pulse-green 2s infinite;
+        }
+
+        .shift-status-badge.flagged {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            animation: pulse-red 1.5s infinite;
+        }
+
+        @keyframes pulse-green {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        @keyframes pulse-red {
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3);
+            }
+
+            50% {
+                opacity: 0.8;
+                box-shadow: 0 0 0 4px rgba(239, 68, 68, 0);
+            }
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-badge {
+            font-size: 12px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-logout {
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 5px 12px;
+            font-size: 12px;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        /* ── LAYOUT ── */
+        .app-body {
+            display: flex;
+            flex: 1;
+            min-height: calc(100vh - 56px);
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: 220px;
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            padding: 16px 0;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-section {
+            padding: 0 12px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0 8px;
+            margin-bottom: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            border: 1px solid transparent;
+            margin-bottom: 2px;
+        }
+
+        .nav-item:hover {
+            background: rgba(201, 168, 76, 0.08);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: rgba(201, 168, 76, 0.12);
+            color: var(--gold);
+            border-color: rgba(201, 168, 76, 0.2);
+        }
+
+        .nav-item .nav-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        /* ── PAGE PANELS ── */
+        .page-panel {
+            display: none;
+        }
+
+        .page-panel.active {
+            display: block;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .page-subtitle {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 24px;
+        }
+
+        /* ── CARDS ── */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ── FORM ELEMENTS ── */
+        .field-group {
+            margin-bottom: 14px;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 5px;
+        }
+
+        .field-input {
+            width: 100%;
+            background: #0A0F1E;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 12px;
+            color: var(--text);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .field-input:focus {
+            border-color: var(--gold);
+        }
+
+        .field-select {
+            width: 100%;
+            background: #0A0F1E;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 12px;
+            color: var(--text);
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .field-select:focus {
+            border-color: var(--gold);
+        }
+
+        /* ── BUTTONS ── */
+        .btn-gold {
+            background: var(--gold);
+            color: var(--bg);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-gold:hover {
+            background: var(--gold-hover);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 9px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* ── STOCK TABLE ── */
+        .stock-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .stock-table th {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stock-table td {
+            padding: 10px;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.5);
+            color: var(--text);
+        }
+
+        .stock-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .stock-table tr:hover td {
+            background: rgba(201, 168, 76, 0.04);
+        }
+
+        .qty-input {
+            width: 80px;
+            background: #0A0F1E;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 8px;
+            color: var(--text);
+            font-size: 13px;
+            text-align: center;
+            outline: none;
+        }
+
+        .qty-input:focus {
+            border-color: var(--gold);
+        }
+
+        /* ── STATUS BADGES ── */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .badge-green {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .badge-red {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .badge-amber {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--amber);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .badge-gray {
+            background: rgba(156, 163, 175, 0.1);
+            color: var(--muted);
+            border: 1px solid rgba(156, 163, 175, 0.2);
+        }
+
+        .badge-gold {
+            background: rgba(201, 168, 76, 0.1);
+            color: var(--gold);
+            border: 1px solid rgba(201, 168, 76, 0.2);
+        }
+
+        /* ── VARIANCE INDICATOR ── */
+        .variance-ok {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        .variance-flag {
+            color: var(--red);
+            font-weight: 700;
+        }
+
+        /* ── ALERT BOX ── */
+        .alert {
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: var(--green);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--red);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: var(--amber);
+        }
+
+        .alert-info {
+            background: rgba(201, 168, 76, 0.1);
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            color: var(--gold);
+        }
+
+        /* ── STAT CARDS ── */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 2px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        /* ── LOADING ── */
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 13px;
+            padding: 20px 0;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── MOBILE ── */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card);
+            border-top: 1px solid var(--border);
+            padding: 8px 0 env(safe-area-inset-bottom);
+            z-index: 100;
+        }
+
+        .mobile-nav-items {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 10px;
+            color: var(--muted);
+            border-radius: 8px;
+            transition: color 0.2s;
+        }
+
+        .mobile-nav-item.active {
+            color: var(--gold);
+        }
+
+        .mobile-nav-item .mn-icon {
+            font-size: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .mobile-nav {
+                display: block;
+            }
+
+            .main-content {
+                padding: 16px 16px 80px;
+            }
+
+            .stat-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .app-header {
+                padding: 0 16px;
+            }
+
+            .header-warehouse {
+                display: none;
+            }
+        }
+
+        /* ── DIVIDER ── */
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 16px 0;
+        }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--muted);
+        }
+
+        .empty-state .empty-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .empty-state .empty-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .empty-state .empty-sub {
+            font-size: 13px;
+        }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            width: 100%;
+            max-width: 480px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .modal-sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ══════════════════════════════════════════════════════
+     SCREEN 1 — LOGIN
+══════════════════════════════════════════════════════ -->
+    <div id="screen-login" class="screen active">
+        <div class="login-card">
+            <div class="login-logo">SS</div>
+            <div class="login-title">StockSentry</div>
+            <div class="login-sub">Sign in to continue to your dashboard</div>
+
+            <div id="login-error" class="error-msg">Please enter your name, PIN, and select a role.</div>
+
+            <label class="form-label">Your name</label>
+            <input type="text" id="login-name" class="form-input" placeholder="e.g. John Kamau">
+
+            <label class="form-label">4-digit PIN</label>
+            <input type="password" id="login-pin" class="form-input" placeholder="••••" maxlength="4"
+                inputmode="numeric">
+
+            <label class="form-label" style="margin-bottom: 8px;">Your role</label>
+            <div class="role-grid" id="role-grid">
+                <div class="role-btn" onclick="selectRole('clerk')" id="role-clerk">
+                    <div class="role-icon">📋</div>
+                    <div class="role-name">Clerk</div>
+                </div>
+                <div class="role-btn" onclick="selectRole('checker')" id="role-checker">
+                    <div class="role-icon">✅</div>
+                    <div class="role-name">Checker</div>
+                </div>
+                <div class="role-btn" onclick="selectRole('supervisor')" id="role-supervisor">
+                    <div class="role-icon">👤</div>
+                    <div class="role-name">Supervisor</div>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="login()">Sign in</button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+     SCREEN 2 — APP SHELL
+══════════════════════════════════════════════════════ -->
+    <div id="screen-app" class="screen">
+
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="header-logo">SS</div>
+                <div>
+                    <div class="header-title">StockSentry</div>
+                    <div class="header-warehouse" id="header-warehouse">Main Warehouse</div>
+                </div>
+            </div>
+            <div id="shift-status-badge" class="shift-status-badge no-shift">No Active Shift</div>
+            <div class="header-right">
+                <div class="user-badge">
+                    <span>👤</span>
+                    <span id="header-username">John Kamau</span>
+                    <span id="header-role-badge" class="badge badge-gold">Clerk</span>
+                </div>
+                <button class="btn-logout" onclick="logout()">Sign out</button>
+            </div>
+        </header>
+
+        <div class="app-body">
+
+            <!-- Sidebar -->
+            <nav class="sidebar" id="sidebar">
+                <!-- nav items injected by JS based on role -->
+            </nav>
+
+            <!-- Main content -->
+            <main class="main-content" id="main-content">
+                <!-- page panels injected here -->
+            </main>
+
+        </div>
+
+        <!-- Mobile bottom nav -->
+        <nav class="mobile-nav" id="mobile-nav">
+            <div class="mobile-nav-items" id="mobile-nav-items">
+                <!-- mobile nav items injected by JS -->
+            </div>
+        </nav>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════════════ -->
+
+    <!-- Breakage modal -->
+    <div class="modal-overlay" id="modal-breakage">
+        <div class="modal">
+            <div class="modal-title">Record Breakage or Leaker</div>
+            <div class="modal-sub">Log stock lost during this shift before closing.</div>
+            <div class="field-group">
+                <label class="field-label">Brand</label>
+                <select class="field-select" id="breakage-brand"></select>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Quantity lost</label>
+                <input type="number" class="field-input" id="breakage-qty" placeholder="0" min="1">
+            </div>
+            <div class="field-group">
+                <label class="field-label">Type</label>
+                <select class="field-select" id="breakage-type">
+                    <option value="breakage">Breakage</option>
+                    <option value="leaker">Leaker</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Description</label>
+                <input type="text" class="field-input" id="breakage-desc"
+                    placeholder="e.g. crates damaged during forklift operation at bay 2">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-outline" onclick="closeModal('modal-breakage')">Cancel</button>
+                <button class="btn-gold" onclick="submitBreakage()">Record Breakage</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expiry modal -->
+    <div class="modal-overlay" id="modal-expiry">
+        <div class="modal">
+            <div class="modal-title">Flag Short Expiry</div>
+            <div class="modal-sub">Alert the supervisor about stock expiring soon.</div>
+            <div class="field-group">
+                <label class="field-label">Brand</label>
+                <select class="field-select" id="expiry-brand"></select>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Quantity affected</label>
+                <input type="number" class="field-input" id="expiry-qty" placeholder="0" min="1">
+            </div>
+            <div class="field-group">
+                <label class="field-label">Expiry date</label>
+                <input type="date" class="field-input" id="expiry-date">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-outline" onclick="closeModal('modal-expiry')">Cancel</button>
+                <button class="btn-gold" onclick="submitExpiry()">Flag Expiry</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit request modal -->
+    <div class="modal-overlay" id="modal-edit">
+        <div class="modal">
+            <div class="modal-title">Request Stock Edit</div>
+            <div class="modal-sub">Changes after reconciliation require supervisor approval and a reason.</div>
+            <div class="field-group">
+                <label class="field-label">Field to edit</label>
+                <select class="field-select" id="edit-field">
+                    <option value="opening_stock">Opening Stock</option>
+                    <option value="closing_stock">Closing Stock</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Brand</label>
+                <select class="field-select" id="edit-brand"></select>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Original value</label>
+                <input type="number" class="field-input" id="edit-original" placeholder="0">
+            </div>
+            <div class="field-group">
+                <label class="field-label">Corrected value</label>
+                <input type="number" class="field-input" id="edit-corrected" placeholder="0">
+            </div>
+            <div class="field-group">
+                <label class="field-label">Reason for edit</label>
+                <input type="text" class="field-input" id="edit-reason"
+                    placeholder="e.g. miscounted during opening stock take, recount confirmed 238">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-outline" onclick="closeModal('modal-edit')">Cancel</button>
+                <button class="btn-gold" onclick="submitEditRequest()">Submit Request</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ══════════════════════════════════════════════════════
+        // CONFIG
+        // ══════════════════════════════════════════════════════
+        const API = 'https://stocksentry-production.up.railway.app';
+
+        // Simple PIN system — in production this would be a real auth backend
+        const USERS = {
+            '1234': { name: 'John Kamau', role: 'clerk', warehouse_id: 'WH001', warehouse_name: 'Main Warehouse' },
+            '2345': { name: 'Peter Omondi', role: 'checker', warehouse_id: 'WH001', warehouse_name: 'Main Warehouse' },
+            '3456': { name: 'Grace Wanjiru', role: 'supervisor', warehouse_id: 'WH001', warehouse_name: 'Main Warehouse' },
+            '4567': { name: 'James Mwangi', role: 'clerk', warehouse_id: 'WH002', warehouse_name: 'Secondary Warehouse' },
+            '5678': { name: 'Mary Njoki', role: 'checker', warehouse_id: 'WH002', warehouse_name: 'Secondary Warehouse' },
+        };
+
+        // App state
+        let state = {
+            user: null,
+            activeShiftId: null,
+            shiftStatus: null,
+            brands: [],
+            currentPage: null,
+        };
+
+        // ══════════════════════════════════════════════════════
+        // LOGIN
+        // ══════════════════════════════════════════════════════
+        let selectedRole = null;
+
+        function selectRole(role) {
+            selectedRole = role;
+            document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
+            document.getElementById('role-' + role).classList.add('selected');
+        }
+
+        function login() {
+            const name = document.getElementById('login-name').value.trim();
+            const pin = document.getElementById('login-pin').value.trim();
+            const errorEl = document.getElementById('login-error');
+
+            if (!name || !pin || !selectedRole) {
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            errorEl.style.display = 'none';
+
+            // Check PIN
+            const user = USERS[pin];
+            if (!user) {
+                errorEl.textContent = 'PIN not recognised. Please try again.';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            // Override name with what they typed (more flexible)
+            state.user = { ...user, name: name, role: selectedRole };
+
+            // Save session
+            sessionStorage.setItem('ss_user', JSON.stringify(state.user));
+
+            // Launch app
+            launchApp();
+        }
+
+        function logout() {
+            sessionStorage.removeItem('ss_user');
+            state = { user: null, activeShiftId: null, shiftStatus: null, brands: [], currentPage: null };
+            selectedRole = null;
+            document.getElementById('login-name').value = '';
+            document.getElementById('login-pin').value = '';
+            document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
+            showScreen('screen-login');
+        }
+
+        // ══════════════════════════════════════════════════════
+        // APP LAUNCH
+        // ══════════════════════════════════════════════════════
+        async function launchApp() {
+            // Update header
+            document.getElementById('header-username').textContent = state.user.name;
+            document.getElementById('header-warehouse').textContent = state.user.warehouse_name;
+            document.getElementById('header-role-badge').textContent = capitalize(state.user.role);
+
+            // Load brands
+            loadBrands();
+
+            // Build navigation for role
+            buildNav(state.user.role);
+
+            // Show app
+            showScreen('screen-app');
+
+            // Check for active shift
+            await checkActiveShift();
+
+            // Navigate to default page
+            const defaultPages = {
+                clerk: 'open-shift',
+                checker: 'record-order',
+                supervisor: 'supervisor-dashboard'
+            };
+
+            navigateTo(defaultPages[state.user.role]);
+        }
+
+        // ══════════════════════════════════════════════════════
+        // BRANDS
+        // ══════════════════════════════════════════════════════
+        function loadBrands() {
+            try {
+
+                state.brands = [
+                    { id: 'AL500B', name: 'Alpha Lager 500ml Bottle' },
+                    { id: 'AL300B', name: 'Alpha Lager 300ml Bottle' },
+                    { id: 'AL500C', name: 'Alpha Lager 500ml Can' },
+                    { id: 'DS300B', name: 'Dark Stout 300ml Bottle' },
+                    { id: 'DS500B', name: 'Dark Stout 500ml Bottle' },
+                    { id: 'DS300C', name: 'Dark Stout 300ml Can' },
+                    { id: 'DS500C', name: 'Dark Stout 500ml Can' },
+                    { id: 'PL500B', name: 'Premium Lager 500ml Bottle' },
+                    { id: 'EL500B', name: 'Economy Lager 500ml Bottle' },
+                    { id: 'LL500B', name: 'Light Lager 500ml Bottle' },
+                    { id: 'ML500B', name: 'Malt Lager 500ml Bottle' },
+                    { id: 'FC330B', name: 'Fruit Cider 330ml Bottle' },
+                    { id: 'FC500B', name: 'Fruit Cider 500ml Bottle' },
+                    { id: 'TB750B', name: 'Traditional Brew 750ml Bottle' },
+                    { id: 'TB500B', name: 'Traditional Brew 500ml Bottle' },
+                    { id: 'SL500B', name: 'Strong Lager 500ml Bottle' },
+                    { id: 'WL330C', name: 'Wheat Lager 330ml Can' },
+                    { id: 'GL500B', name: 'Gold Lager 500ml Bottle' },
+                    { id: 'RL500B', name: 'Red Lager 500ml Bottle' },
+                ];
+            } catch (e) {
+                console.log('Brand load error:', e);
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // NAVIGATION
+        // ══════════════════════════════════════════════════════
+        const NAV_CONFIG = {
+            clerk: [
+                { id: 'open-shift', icon: '🟢', label: 'Open Shift' },
+                { id: 'record-order', icon: '📦', label: 'Record Order' },
+                { id: 'transfers', icon: '🔄', label: 'Transfers' },
+                { id: 'breakages', icon: '⚠️', label: 'Breakages' },
+                { id: 'inventory', icon: '📊', label: 'Inventory' },
+                { id: 'close-shift', icon: '🔴', label: 'Close Shift' },
+                { id: 'my-reports', icon: '📋', label: 'My Reports' },
+            ],
+            checker: [
+                { id: 'record-order', icon: '📦', label: 'Record Order' },
+                { id: 'my-orders', icon: '📋', label: 'My Orders' },
+            ],
+            supervisor: [
+                { id: 'supervisor-dashboard', icon: '📊', label: 'Dashboard' },
+                { id: 'all-shifts', icon: '📋', label: 'All Shifts' },
+                { id: 'edit-approvals', icon: '✏️', label: 'Edit Requests' },
+                { id: 'expiry-alerts', icon: '⚠️', label: 'Expiry Alerts' },
+                { id: 'monthly-report', icon: '📈', label: 'Monthly Report' },
+                { id: 'audit-trail', icon: '🗄️', label: 'Audit Trail' },
+            ]
+        };
+
+        function buildNav(role) {
+            const items = NAV_CONFIG[role] || [];
+            const sidebar = document.getElementById('sidebar');
+            const mobileNav = document.getElementById('mobile-nav-items');
+
+            sidebar.innerHTML = `<div class="sidebar-section"><div class="sidebar-label">${capitalize(role)} Menu</div>`;
+            mobileNav.innerHTML = '';
+
+            items.forEach(item => {
+                sidebar.innerHTML += `
+      <div class="nav-item" id="nav-${item.id}" onclick="navigateTo('${item.id}')">
+        <span class="nav-icon">${item.icon}</span>
+        <span>${item.label}</span>
+      </div>`;
+
+                mobileNav.innerHTML += `
+      <div class="mobile-nav-item" id="mnav-${item.id}" onclick="navigateTo('${item.id}')">
+        <span class="mn-icon">${item.icon}</span>
+        <span>${item.label}</span>
+      </div>`;
+            });
+
+            sidebar.innerHTML += '</div>';
+        }
+
+        function navigateTo(pageId) {
+            state.currentPage = pageId;
+
+            // Update nav active states
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.remove('active'));
+
+            const navEl = document.getElementById('nav-' + pageId);
+            const mnavEl = document.getElementById('mnav-' + pageId);
+            if (navEl) navEl.classList.add('active');
+            if (mnavEl) mnavEl.classList.add('active');
+
+            // Render page
+            renderPage(pageId);
+        }
+
+        // ══════════════════════════════════════════════════════
+        // PAGE RENDERER
+        // ══════════════════════════════════════════════════════
+        function renderPage(pageId) {
+            const main = document.getElementById('main-content');
+
+            switch (pageId) {
+                case 'open-shift': main.innerHTML = renderOpenShift(); break;
+                case 'record-order': main.innerHTML = renderRecordOrder(); break;
+                case 'transfers': main.innerHTML = renderTransfers(); break;
+                case 'breakages': main.innerHTML = renderBreakagesPage(); break;
+                case 'inventory': main.innerHTML = renderInventory(); loadInventory(); break;
+                case 'close-shift': main.innerHTML = renderCloseShift(); break;
+                case 'my-reports': main.innerHTML = renderMyReports(); loadMyReports(); break;
+                case 'supervisor-dashboard': main.innerHTML = renderSupervisorDashboard(); loadSupervisorDashboard(); break;
+                case 'all-shifts': main.innerHTML = renderAllShifts(); loadAllShifts(); break;
+                case 'edit-approvals': main.innerHTML = renderEditApprovals(); break;
+                case 'expiry-alerts': main.innerHTML = renderExpiryAlertsPage(); loadExpiryAlerts(); break;
+                case 'monthly-report': main.innerHTML = renderMonthlyReport(); break;
+                case 'audit-trail': main.innerHTML = renderAuditTrail(); loadAuditTrail(); break;
+                case 'my-orders': main.innerHTML = renderMyOrders(); loadMyOrders(); break;
+                default: main.innerHTML = '<div class="empty-state"><div class="empty-icon">🔧</div><div class="empty-title">Page coming soon</div></div>';
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ACTIVE SHIFT CHECK
+        // ══════════════════════════════════════════════════════
+        async function checkActiveShift() {
+            try {
+                const res = await fetch(`${API}/shifts?warehouse_id=${state.user.warehouse_id}`);
+                const shifts = await res.json();
+                const open = shifts.find(s => s.status === 'open');
+                if (open) {
+                    state.activeShiftId = open.id;
+                    state.shiftStatus = 'open';
+                    updateShiftBadge('open', open.shift);
+                } else {
+                    updateShiftBadge('none');
+                }
+            } catch (e) {
+                console.log('Shift check error:', e);
+            }
+        }
+
+        function updateShiftBadge(status, shiftName) {
+            const badge = document.getElementById('shift-status-badge');
+            badge.className = 'shift-status-badge';
+            if (status === 'open') {
+                badge.classList.add('open');
+                badge.textContent = `${shiftName} Shift — Open`;
+            } else if (status === 'flagged') {
+                badge.classList.add('flagged');
+                badge.textContent = 'Shift Flagged';
+            } else {
+                badge.classList.add('no-shift');
+                badge.textContent = 'No Active Shift';
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // PAGE: OPEN SHIFT
+        // ══════════════════════════════════════════════════════
+        function renderOpenShift() {
+            if (state.activeShiftId) {
+                return `
+      <div class="page-title">Open Shift</div>
+      <div class="page-subtitle">Start a new shift by recording opening stock counts.</div>
+      <div class="alert alert-warning">
+        There is already an active shift open for ${state.user.warehouse_name}. Close the current shift before opening a new one.
+      </div>
+      <button class="btn-outline" onclick="navigateTo('close-shift')">Go to Close Shift →</button>
+    `;
+            }
+
+            const brandRows = state.brands.map(b => `
+    <tr>
+      <td>${b.name}</td>
+      <td><input type="number" class="qty-input" id="os-${b.id}" placeholder="0" min="0"></td>
+    </tr>
+  `).join('');
+
+            return `
+    <div class="page-title">Open Shift</div>
+    <div class="page-subtitle">Record the opening stock count for each brand to start the shift.</div>
+
+    <div id="open-shift-alert"></div>
+
+    <div class="card">
+      <div class="card-title">Shift Details</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="field-group">
+          <label class="field-label">Shift</label>
+          <select class="field-select" id="shift-type">
+            <option value="Day">Day Shift</option>
+            <option value="Afternoon">Afternoon Shift</option>
+            <option value="Night">Night Shift</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Date</label>
+          <input type="date" class="field-input" id="shift-date" value="${today()}">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Opening Stock Count</div>
+      <table class="stock-table">
+        <thead>
+          <tr>
+            <th>Brand</th>
+            <th>Opening Count (crates)</th>
+          </tr>
+        </thead>
+        <tbody>${brandRows}</tbody>
+      </table>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top: 4px;">
+      <button class="btn-gold" onclick="submitOpenShift()">Open Shift</button>
+      <button class="btn-outline" onclick="clearOpenShift()">Clear</button>
+    </div>
+  `;
+        }
+
+        async function submitOpenShift() {
+            const shiftType = document.getElementById('shift-type').value;
+            const shiftDate = document.getElementById('shift-date').value;
+            const alertEl = document.getElementById('open-shift-alert');
+
+            const opening_stock = {};
+            state.brands.forEach(b => {
+                const val = document.getElementById('os-' + b.id)?.value;
+                if (val && parseInt(val) > 0) {
+                    opening_stock[b.id] = parseInt(val);
+                }
+            });
+
+            if (Object.keys(opening_stock).length === 0) {
+                alertEl.innerHTML = '<div class="alert alert-error">Please enter at least one brand count before opening the shift.</div>';
+                return;
+            }
+
+            alertEl.innerHTML = '<div class="loading"><div class="spinner"></div> Opening shift...</div>';
+
+            try {
+                const res = await fetch(`${API}/shifts/open`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        warehouse_id: state.user.warehouse_id,
+                        shift: shiftType,
+                        clerk_name: state.user.name,
+                        date: shiftDate,
+                        opening_stock
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    state.activeShiftId = data.shift_record_id;
+                    state.shiftStatus = 'open';
+                    updateShiftBadge('open', shiftType);
+                    alertEl.innerHTML = `<div class="alert alert-success">✓ Shift opened. Shift ID: ${data.shift_record_id}</div>`;
+                } else {
+                    alertEl.innerHTML = `<div class="alert alert-error">${data.detail || 'Failed to open shift.'}</div>`;
+                }
+            } catch (e) {
+                alertEl.innerHTML = '<div class="alert alert-error">Could not connect to the server. Check your connection.</div>';
+            }
+        }
+
+        function clearOpenShift() {
+            state.brands.forEach(b => {
+                const el = document.getElementById('os-' + b.id);
+                if (el) el.value = '';
+            });
+        }
+
+        // ══════════════════════════════════════════════════════
+        // PAGE: RECORD ORDER
+        // ══════════════════════════════════════════════════════
+        function renderRecordOrder() {
+            if (!state.activeShiftId && state.user.role === 'clerk') {
+                return `
+      <div class="page-title">Record Order</div>
+      <div class="page-subtitle">Log a dispatched sales order and verify quantities.</div>
+      <div class="alert alert-warning">No active shift. Open a shift before recording orders.</div>
+      <button class="btn-outline" onclick="navigateTo('open-shift')">Open Shift →</button>
+    `;
+            }
+
+            const itemRows = state.brands.slice(0, 5).map((b, i) => `
+    <tr id="order-item-row-${i}">
+      <td>
+        <select class="field-select" id="item-brand-${i}" style="width:100%">
+          <option value="">Select brand...</option>
+          ${state.brands.map(br => `<option value="${br.id}" data-name="${br.name}">${br.name}</option>`).join('')}
+        </select>
+      </td>
+      <td><input type="number" class="qty-input" id="item-ordered-${i}" placeholder="0" min="0" oninput="calcVariance(${i})"></td>
+      <td><input type="number" class="qty-input" id="item-dispatched-${i}" placeholder="0" min="0" oninput="calcVariance(${i})"></td>
+      <td id="item-variance-${i}" style="font-weight:700; color: var(--muted);">—</td>
+    </tr>
+  `).join('');
+
+            return `
+    <div class="page-title">Record Order</div>
+    <div class="page-subtitle">Enter the order details and confirm what was dispatched against what was ordered.</div>
+
+    <div id="order-alert"></div>
+
+    <div class="card">
+      <div class="card-title">Order Details</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="field-group">
+          <label class="field-label">Order Number</label>
+          <input type="text" class="field-input" id="order-number" placeholder="ORD-2026-001">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Delivery Number</label>
+          <input type="text" class="field-input" id="delivery-number" placeholder="DEL-2026-001">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Client Name</label>
+          <input type="text" class="field-input" id="client-name" placeholder="e.g. Metro Supermarket">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Truck Number</label>
+          <input type="text" class="field-input" id="truck-number" placeholder="e.g. KBZ 123A">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Checker Name</label>
+          <input type="text" class="field-input" id="checker-name" placeholder="e.g. Peter Omondi">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Forklift Operator</label>
+          <input type="text" class="field-input" id="forklift-operator" placeholder="e.g. James Mwangi">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Items Dispatched</div>
+      <table class="stock-table">
+        <thead>
+          <tr>
+            <th style="width:45%">Brand</th>
+            <th>Ordered</th>
+            <th>Dispatched</th>
+            <th>Variance</th>
+          </tr>
+        </thead>
+        <tbody id="order-items-body">
+          ${itemRows}
+        </tbody>
+      </table>
+      <button class="btn-outline" style="margin-top:12px; font-size:12px;" onclick="addOrderItem()">+ Add another brand</button>
+    </div>
+
+    <div style="display:flex; gap:10px;">
+      <button class="btn-gold" onclick="submitOrder()">Submit Order</button>
+      <button class="btn-outline" onclick="renderPage('record-order')">Clear</button>
+    </div>
+  `;
+        }
+
+        let orderItemCount = 5;
+
+        function addOrderItem() {
+            const i = orderItemCount++;
+            const tbody = document.getElementById('order-items-body');
+            const row = document.createElement('tr');
+            row.id = `order-item-row-${i}`;
+            row.innerHTML = `
+    <td>
+      <select class="field-select" id="item-brand-${i}" style="width:100%">
+        <option value="">Select brand...</option>
+        ${state.brands.map(br => `<option value="${br.id}" data-name="${br.name}">${br.name}</option>`).join('')}
+      </select>
+    </td>
+    <td><input type="number" class="qty-input" id="item-ordered-${i}" placeholder="0" min="0" oninput="calcVariance(${i})"></td>
+    <td><input type="number" class="qty-input" id="item-dispatched-${i}" placeholder="0" min="0" oninput="calcVariance(${i})"></td>
+    <td id="item-variance-${i}" style="font-weight:700; color: var(--muted);">—</td>
+  `;
+            tbody.appendChild(row);
+        }
+
+        function calcVariance(i) {
+            const ordered = parseInt(document.getElementById(`item-ordered-${i}`)?.value) || 0;
+            const dispatched = parseInt(document.getElementById(`item-dispatched-${i}`)?.value) || 0;
+            const varEl = document.getElementById(`item-variance-${i}`);
+            if (!varEl) return;
+            const v = dispatched - ordered;
+            if (ordered === 0 && dispatched === 0) { varEl.textContent = '—'; varEl.style.color = 'var(--muted)'; return; }
+            varEl.textContent = v === 0 ? '0 ✓' : (v > 0 ? '+' : '') + v + ' ⚠';
+            varEl.style.color = v === 0 ? 'var(--green)' : 'var(--red)';
+        }
+
+        async function submitOrder() {
+            const alertEl = document.getElementById('order-alert');
+            const orderNumber = document.getElementById('order-number').value.trim();
+            const deliveryNumber = document.getElementById('delivery-number').value.trim();
+            const clientName = document.getElementById('client-name').value.trim();
+            const truckNumber = document.getElementById('truck-number').value.trim();
+            const checkerName = document.getElementById('checker-name').value.trim();
+            const forkliftOperator = document.getElementById('forklift-operator').value.trim();
+
+            if (!orderNumber || !deliveryNumber || !clientName || !truckNumber || !checkerName || !forkliftOperator) {
+                alertEl.innerHTML = '<div class="alert alert-error">Please fill in all order details before submitting.</div>';
+                return;
+            }
+
+            const items = [];
+            for (let i = 0; i < orderItemCount; i++) {
+                const brandEl = document.getElementById(`item-brand-${i}`);
+                const orderedEl = document.getElementById(`item-ordered-${i}`);
+                const dispatchedEl = document.getElementById(`item-dispatched-${i}`);
+                if (!brandEl || !brandEl.value) continue;
+                const brandId = brandEl.value;
+                const brandName = brandEl.options[brandEl.selectedIndex]?.dataset.name || brandId;
+                const ordered = parseInt(orderedEl?.value) || 0;
+                const dispatched = parseInt(dispatchedEl?.value) || 0;
+                if (ordered === 0 && dispatched === 0) continue;
+                items.push({ brand_id: brandId, brand_name: brandName, ordered, dispatched });
+            }
+
+            if (items.length === 0) {
+                alertEl.innerHTML = '<div class="alert alert-error">Please add at least one item before submitting.</div>';
+                return;
+            }
+
+            alertEl.innerHTML = '<div class="loading"><div class="spinner"></div> Recording order...</div>';
+
+            try {
+                const res = await fetch(`${API}/orders/record`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        shift_record_id: state.activeShiftId || 'no-shift',
+                        warehouse_id: state.user.warehouse_id,
+                        order_number: orderNumber,
+                        delivery_number: deliveryNumber,
+                        client_name: clientName,
+                        truck_number: truckNumber,
+                        checker_name: checkerName,
+                        forklift_operator: forkliftOperator,
+                        clerk_name: state.user.name,
+                        items
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    const statusColor = data.status === 'flagged' ? 'alert-error' : 'alert-success';
+                    alertEl.innerHTML = `<div class="alert ${statusColor}">${data.message}</div>`;
+                } else {
+                    alertEl.innerHTML = `<div class="alert alert-error">${data.detail || 'Failed to record order.'}</div>`;
+                }
+            } catch (e) {
+                alertEl.innerHTML = '<div class="alert alert-error">Could not connect to the server.</div>';
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // PAGE: CLOSE SHIFT
+        // ══════════════════════════════════════════════════════
+        function renderCloseShift() {
+            if (!state.activeShiftId) {
+                return `
+      <div class="page-title">Close Shift</div>
+      <div class="page-subtitle">Record closing stock counts to complete the shift.</div>
+      <div class="alert alert-warning">No active shift to close.</div>
+      <button class="btn-outline" onclick="navigateTo('open-shift')">Open a Shift →</button>
+    `;
+            }
+
+            const brandRows = state.brands.map(b => `
+    <tr>
+      <td>${b.name}</td>
+      <td><input type="number" class="qty-input" id="cs-${b.id}" placeholder="0" min="0"></td>
+    </tr>
+  `).join('');
+
+            return `
+    <div class="page-title">Close Shift</div>
+    <div class="page-subtitle">Enter the closing stock count for each brand. The system will calculate variances automatically.</div>
+
+    <div class="alert alert-info">Active shift: <strong>${state.activeShiftId}</strong></div>
+
+    <div id="close-shift-alert"></div>
+
+    <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+      <button class="btn-outline" onclick="openModal('modal-breakage'); populateBreakageBrands()">⚠️ Record Breakage</button>
+      <button class="btn-outline" onclick="openModal('modal-expiry'); populateExpiryBrands()">📅 Flag Short Expiry</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Closing Stock Count</div>
+      <table class="stock-table">
+        <thead>
+          <tr>
+            <th>Brand</th>
+            <th>Closing Count (crates)</th>
+          </tr>
+        </thead>
+        <tbody>${brandRows}</tbody>
+      </table>
+    </div>
+
+    <div style="display:flex; gap:10px;">
+      <button class="btn-danger" onclick="submitCloseShift()">Close Shift</button>
+      <button class="btn-outline" onclick="clearCloseShift()">Clear</button>
+    </div>
+  `;
+        }
+
+        async function submitCloseShift() {
+            const alertEl = document.getElementById('close-shift-alert');
+
+            const closing_stock = {};
+            state.brands.forEach(b => {
+                const val = document.getElementById('cs-' + b.id)?.value;
+                if (val !== '' && val !== undefined) {
+                    closing_stock[b.id] = parseInt(val) || 0;
+                }
+            });
+
+            if (Object.keys(closing_stock).length === 0) {
+                alertEl.innerHTML = '<div class="alert alert-error">Please enter at least one closing count before closing the shift.</div>';
+                return;
+            }
+
+            alertEl.innerHTML = '<div class="loading"><div class="spinner"></div> Closing shift and calculating variances...</div>';
+
+            try {
+                const res = await fetch(`${API}/shifts/close`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        shift_record_id: state.activeShiftId,
+                        clerk_name: state.user.name,
+                        closing_stock
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    state.activeShiftId = null;
+                    state.shiftStatus = null;
+                    updateShiftBadge('none');
+                    alertEl.innerHTML = '<div class="alert alert-success">✓ Shift closed. The supervisor has been notified via Slack. Variance analysis is running in the background.</div>';
+                } else {
+                    alertEl.innerHTML = `<div class="alert alert-error">${data.detail || 'Failed to close shift.'}</div>`;
+                }
+            } catch (e) {
+                alertEl.innerHTML = '<div class="alert alert-error">Could not connect to the server.</div>';
+            }
+        }
+
+        function clearCloseShift() {
+            state.brands.forEach(b => {
+                const el = document.getElementById('cs-' + b.id);
+                if (el) el.value = '';
+            });
+        }
+
+        // ══════════════════════════════════════════════════════
+        // PAGE: INVENTORY
+        // ══════════════════════════════════════════════════════
+        function renderInventory() {
+            return `
+    <div class="page-title">Current Inventory</div>
+    <div class="page-subtitle">Live stock levels for ${state.user.warehouse_name} based on today's shift activity.</div>
+    <div id="inventory-content">
+      <div class="loading"><div class="spinner"></div> Loading inventory...</div>
+    </div>
+  `;
+        }
+
+        async function loadInventory() {
+            const el = document.getElementById('inventory-content');
+            try {
+                const res = await fetch(`${API}/inventory/current?warehouse_id=${state.user.warehouse_id}&date=${today()}`);
+                const data = await res.json();
+
+                if (!data.inventory || Object.keys(data.inventory).length === 0) {
+                    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-title">No inventory data yet</div><div class="empty-sub">Open a shift to start tracking stock levels.</div></div>';
+                    return;
+                }
+
+                const rows = Object.entries(data.inventory).map(([id, info]) => `
+      <tr>
+        <td>${info.brand_name}</td>
+        <td style="font-weight:700; color: var(--gold);">${info.quantity}</td>
+        <td>${info.breakage_loss ? `<span class="badge badge-red">-${info.breakage_loss} lost</span>` : '—'}</td>
+        <td>${info.expiry_warning ? '<span class="badge badge-amber">⚠ Expiring soon</span>' : '<span class="badge badge-green">OK</span>'}</td>
+      </tr>
+    `).join('');
+
+                el.innerHTML = `
+      <div class="card">
+        <div class="card-title">Stock as of ${today()} — Last updated: ${formatTime(data.last_updated)}</div>
+        <table class="stock-table">
+          <thead>
+            <tr>
+              <th>Brand</th>
+              <th>Current Stock</th>
+              <th>Breakage</th>
+              <th>Expiry</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <button class="btn-outline" onclick="loadInventory()">↻ Refresh</button>
+    `;
+            } catch (e) {
+                el.innerHTML = '<div class="alert alert-error">Could not load inventory. Check your connection.</div>';
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // PAGE: TRANSFERS
+        // ══════════════════════════════════════════════════════
+        function renderTransfers() {
+            return `
+    <div class="page-title">Inter-warehouse Transfers</div>
+    <div class="page-subtitle">Record stock moving between warehouses or confirm incoming stock.</div>
+
+    <div id="transfer-alert"></div>
+
+    <div class="card">
+      <div class="card-title">Send Stock to Another Warehouse</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+        <div class="field-group">
+          <label class="field-label">Brand</label>
+          <select class="field-select" id="transfer-brand">
+            ${state.brands.map(b => `<option value="${b.id}" data-name="${b.name}">${b.name}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Quantity to send</label>
+          <input type="number" class="field-input" id="transfer-qty" placeholder="0" min="1">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Destination warehouse</label>
+          <select class="field-select" id="transfer-dest">
+            <option value="WH002" data-name="Secondary Warehouse">Secondary Warehouse</option>
+            <option value="WH003" data-name="Distribution Warehouse">Distribution Warehouse</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Authorised by</label>
+          <input type="text" class="field-input" id="transfer-auth" placeholder="Supervisor name">
+        </div>
+      </div>
+      <button class="btn-gold" onclick="submitTransferOut()">Send Stock</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Confirm Incoming Stock</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+        <div class="field-group">
+          <label class="field-label">Movement ID</label>
+          <input type="text" class="field-input" id="receive-movement-id" placeholder="mov_xxxxxxxx">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Quantity received</label>
+          <input type="number" class="field-input" id="receive-qty" placeholder="0" min="1">
+        </div>
+      </div>
+      <button class="btn-gold" onclick="submitTransferIn()">Confirm Receipt</button>
+    </div>
+  `;
+        }
+
+        async function submitTransferOut() {
+            const alertEl = document.getElementById('transfer-alert');
+            const brandEl = document.getElementById('transfer-brand');
+            const destEl = document.getElementById('transfer-dest');
+            const qty = parseInt(document.getElementById('transfer-qty').value) || 0;
+            const auth = document.getElementById('transfer-auth').value.trim();
+
+            if (!qty || !auth) {
+                alertEl.innerHTML = '<div class="alert alert-error">Please fill in all fields before sending.</div>';
+                return;
+            }
+
+            alertEl.innerHTML = '<div class="loading"><div class="spinner"></div> Recording transfer...</div>';
+
+            try {
+                const res = await fetch(`${API}/movements/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        from_warehouse_id: state.user.warehouse_id,
+                        from_warehouse_name: state.user.warehouse_name,
+                        to_warehouse_id: destEl.value,
+                        to_warehouse_name: destEl.options[destEl.selectedIndex].dataset.name,
+                        brand_id: brandEl.value,
+                        brand_name: brandEl.options[brandEl.selectedIndex].dataset.name || brandEl.value,
+                        quantity_sent: qty,
+                        authorised_by: auth
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alertEl.innerHTML = `<div class="alert alert-success">✓ Transfer recorded. Movement ID: ${data.movement_id}. Receiving warehouse notified.</div>`;
+                } else {
+                    alertEl.innerHTML = `<div class="alert alert-error">${data.detail || 'Transfer failed.'}</div>`;
+                }
+            } catch (e) {
+                alertEl.innerHTML = '<div class="alert alert-error">Could not connect to the server.</div>';
+            }
+        }
+
+        async function submitTransferIn() {
+            const alertEl = document.getElementById('transfer-alert');
+            const movementId = document.getElementById('receive-movement-id').value.trim();
+            const qty = parseInt(document.getElementById('receive-qty').value) || 0;
+
+            if (!movementId || !qty) {
+                alertEl.innerHTML = '<div class="alert alert-error">Please enter the movement ID and quantity received.</div>';
+                return;
+            }
+
+            alertEl.innerHTML = '<div class="loading"><div class="spinner"></div> Confirming receipt...</div>';
+
+            try {
+                const res = await fetch(`${API}/movements/receive`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        movement_id: movementId,
+                        quantity_received: qty,
+                        received_by: state.user.name
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    const color = data.variance === 0 ? 'alert-success' : 'alert-error';
+                    alertEl.innerHTML = `<div class="alert ${color}">${data.message}</div>`;
+                } else {
+                    alertEl.innerHTML = `<div class="alert alert-error">${data.detail || 'Receipt confirmation failed.'}</div>`;
+                }
+            } catch (e) {
+                alertEl.innerHTML = '<div class="alert alert-error">Could not connect to the server.</div>';
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // PAGE: BREAKAGES
+        // ══════════════════════════════════════════════════════
+        function renderBreakagesPage() {
+            return `
+    <div class="page-title">Breakages and Leakers</div>
+    <div class="page-subtitle">Record stock lost during this shift due to physical damage or leakage.</div>
+    <div id="breakage-page-alert"></div>
+    <button class="btn-gold" style="margin-bottom:16px;" onclick="openModal('modal-breakage'); populateBreakageBrands()">+ Record Breakage or Leaker</button>
+    <div id="breakage-list">
+      <div class="loading"><div class="spinner"></div> Loading breakages...</div>
+    </div>
+  `;
+        }
+
+        // ══════════════════════════════════════════════════════
+        // PAGE: MY REPORTS
+        // ══════════════════════════════════════════════════════
+        function renderMyReports() {
+            return `
+    <div class="page-title">My Reports</div>
+    <div class="page-subtitle">View shifts you have worked and request edits if needed.</div>
+    <div id="my-reports-content">
+      <div class="loading"><div class="spinner"></div> Loading your shifts...</div>
+    </div>
+  `;
+        }
+
+        async function loadMyReports() {
+            const el = document.getElementById('my-reports-content');
+            try {
+                const res = await fetch(`${API}/shifts?warehouse_id=${state.user.warehouse_id}`);
+                const shifts = await res.json();
+
+                if (shifts.length === 0) {
+                    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No shifts yet</div><div class="empty-sub">Your shift reports will appear here after you close a shift.</div></div>';
+                    return;
+                }
+
+                const rows = shifts.map(s => `
+      <tr>
+        <td>${s.date}</td>
+        <td>${s.shift}</td>
+        <td>${s.clerk}</td>
+        <td><span class="badge ${statusBadge(s.status)}">${s.status}</span></td>
+        <td>${s.signed_off ? '✓' : '—'}</td>
+        <td>
+          <button class="btn-outline" style="padding:4px 10px; font-size:11px;" onclick="viewShiftDetail('${s.id}')">View</button>
+          ${s.status !== 'open' ? `<button class="btn-outline" style="padding:4px 10px; font-size:11px; margin-left:4px;" onclick="openEditModal('${s.id}')">Request Edit</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+
+                el.innerHTML = `
+      <div class="card">
+        <table class="stock-table">
+          <thead>
+            <tr><th>Date</th><th>Shift</th><th>Clerk</th><th>Status</th><th>Signed Off</th><th>Actions</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+            } catch (e) {
+                el.innerHTML = '<div class="alert alert-error">Could not load reports.</div>';
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // PAGE: SUPERVISOR DASHBOARD
+        // ══════════════════════════════════════════════════════
+        function renderSupervisorDashboard() {
+            return `
+    <div class="page-title">Supervisor Dashboard</div>
+    <div class="page-subtitle">Overview of all warehouse activity and pending actions.</div>
+    <div id="supervisor-dash-content">
+      <div class="loading"><div class="spinner"></div> Loading dashboard...</div>
+    </div>
+  `;
+        }
+
+        async function loadSupervisorDashboard() {
+            const el = document.getElementById('supervisor-dash-content');
+            try {
+                const [shiftsRes, expiryRes] = await Promise.all([
+                    fetch(`${API}/shifts`),
+                    fetch(`${API}/expiry/alerts`)
+                ]);
+
+                const shifts = await shiftsRes.json();
+                const expiry = await expiryRes.json();
+
+                const open = shifts.filter(s => s.status === 'open').length;
+                const flagged = shifts.filter(s => s.status === 'flagged').length;
+                const pending = shifts.filter(s => s.status === 'pending_approval').length;
+                const approved = shifts.filter(s => s.status === 'approved').length;
+
+                const recentRows = shifts.slice(0, 8).map(s => `
+      <tr>
+        <td>${s.warehouse}</td>
+        <td>${s.date}</td>
+        <td>${s.shift}</td>
+        <td>${s.clerk}</td>
+        <td><span class="badge ${statusBadge(s.status)}">${s.status}</span></td>
+        <td>
+          <button class="btn-outline" style="padding:4px 10px; font-size:11px;" onclick="viewShiftDetail('${s.id}')">Review</button>
+        </td>
+      </tr>
+    `).join('');
+
+                el.innerHTML = `
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--green);">${open}</div>
+          <div class="stat-label">Open shifts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--amber);">${pending}</div>
+          <div class="stat-label">Pending sign-off</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--red);">${flagged}</div>
+          <div class="stat-label">Flagged shifts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${approved}</div>
+          <div class="stat-label">Approved today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--amber);">${expiry.length}</div>
+          <div class="stat-label">Expiry alerts</div>
+        </div>
+      </div>
+
+      ${flagged > 0 || pending > 0 ? `<div class="alert alert-warning">You have ${pending} shift(s) pending sign-off and ${flagged} flagged shift(s) requiring attention.</div>` : ''}
+
+      <div class="card">
+        <div class="card-title">Recent Shifts</div>
+        <table class="stock-table">
+          <thead>
+            <tr><th>Warehouse</th><th>Date</th><th>Shift</th><th>Clerk</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody>${recentRows}</tbody>
+        </table>
+      </div>
+    `;
+            } catch (e) {
+                el.innerHTML = '<div class="alert alert-error">Could not load dashboard data.</div>';
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // PAGE: ALL SHIFTS
+        // ══════════════════════════════════════════════════════
+        function renderAllShifts() {
+            return `
+    <div class="page-title">All Shifts</div>
+    <div class="page-subtitle">Review and sign off on all shifts across all warehouses.</div>
+    <div id="all-shifts-content">
+      <div class="loading"><div class="spinner"></div> Loading shifts...</div>
+    </div>
+  `;
+        }
+
+        async function loadAllShifts() {
+            const el = document.getElementById('all-shifts-content');
+            try {
+                const res = await fetch(`${API}/shifts`);
+                const shifts = await res.json();
+
+                if (shifts.length === 0) {
+                    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No shifts yet</div></div>';
+                    return;
+                }
+
+                const rows = shifts.map(s => `
+      <tr>
+        <td>${s.warehouse}</td>
+        <td>${s.date}</td>
+        <td>${s.shift}</td>
+        <td>${s.clerk}</td>
+        <td><span class="badge ${statusBadge(s.status)}">${s.status}</span></td>
+        <td>${s.signed_off ? '<span class="badge badge-green">✓ Signed</span>' : '<span class="badge badge-gray">Pending</span>'}</td>
+        <td>
+          <button class="btn-outline" style="padding:4px 10px; font-size:11px;" onclick="viewShiftDetail('${s.id}')">Review</button>
+        </td>
+      </tr>
+    `).join('');
+
+                el.innerHTML = `
+      <div class="card">
+        <table class="stock-table">
+          <thead>
+            <tr><th>Warehouse</th><th>Date</th><th>Shift</th><th>Clerk</th><th>Status</th><th>Sign-off</th><th>Action</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+            } catch (e) {
+                el.innerHTML = '<div class="alert alert-error">Could not load shifts.</div>';
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // SHIFT DETAIL VIEW
+        // ══════════════════════════════════════════════════════
+        async function viewShiftDetail(shiftId) {
+            const main = document.getElementById('main-content');
+            main.innerHTML = '<div class="loading"><div class="spinner"></div> Loading shift details...</div>';
+
+            try {
+                const res = await fetch(`${API}/shifts/${shiftId}`);
+                const shift = await res.json();
+
+                const varianceRows = shift.variances ? Object.entries(shift.variances).map(([id, v]) => `
+      <tr>
+        <td>${v.brand_name}</td>
+        <td>${v.opening}</td>
+        <td>${v.sold || 0}</td>
+        <td>${v.expected_closing}</td>
+        <td>${v.actual_closing ?? '—'}</td>
+        <td class="${v.variance === 0 ? 'variance-ok' : 'variance-flag'}">${v.variance > 0 ? '+' : ''}${v.variance} ${v.status === 'flagged' ? '⚠' : '✓'}</td>
+      </tr>
+    `).join('') : '<tr><td colspan="6" style="color:var(--muted); text-align:center;">No variance data yet</td></tr>';
+
+                const isSupervisor = state.user.role === 'supervisor';
+                const canSignOff = isSupervisor && !shift.signed_off && shift.status !== 'open';
+
+                main.innerHTML = `
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+        <button class="btn-outline" style="padding:6px 12px; font-size:12px;" onclick="navigateTo('${state.user.role === 'supervisor' ? 'all-shifts' : 'my-reports'}')">← Back</button>
+        <div class="page-title" style="margin:0;">Shift Detail</div>
+        <span class="badge ${statusBadge(shift.status)}">${shift.status}</span>
+      </div>
+
+      <div id="shift-detail-alert"></div>
+
+      <div class="card">
+        <div class="card-title">Shift Information</div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap:12px;">
+          <div><div class="field-label">Warehouse</div><div style="color:var(--text); font-size:13px;">${shift.warehouse}</div></div>
+          <div><div class="field-label">Shift</div><div style="color:var(--text); font-size:13px;">${shift.shift}</div></div>
+          <div><div class="field-label">Date</div><div style="color:var(--text); font-size:13px;">${shift.date}</div></div>
+          <div><div class="field-label">Clerk</div><div style="color:var(--text); font-size:13px;">${shift.clerk}</div></div>
+          <div><div class="field-label">Supervisor</div><div style="color:var(--text); font-size:13px;">${shift.supervisor || '—'}</div></div>
+          <div><div class="field-label">Signed Off</div><div style="color:var(--text); font-size:13px;">${shift.signed_off ? '✓ Yes' : 'No'}</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Variance Report</div>
+        <table class="stock-table">
+          <thead>
+            <tr><th>Brand</th><th>Opening</th><th>Sold</th><th>Expected</th><th>Actual</th><th>Variance</th></tr>
+          </thead>
+          <tbody>${varianceRows}</tbody>
+        </table>
+      </div>
+
+      ${canSignOff ? `
+      <div class="card">
+        <div class="card-title">Supervisor Sign-off</div>
+        <div class="field-group">
+          <label class="field-label">Notes</label>
+          <input type="text" class="field-input" id="signoff-notes" placeholder="Optional notes for this shift...">
+        </div>
+        <div style="display:flex; gap:10px; margin-top:4px;">
+          <button class="btn-gold" onclick="submitSignoff('${shiftId}', true)">✓ Approve Shift</button>
+          <button class="btn-danger" onclick="submitSignoff('${shiftId}', false)">✗ Flag Shift</button>
+        </div>
+      </div>
+      ` : ''}
+    `;
+            } catch (e) {
+                main.innerHTML = '<div class="alert alert-error">Could not load shift details.</div>';
+            }
+        }
+
+        async function submitSignoff(shiftId, approved) {
+            const alertEl = document.getElementById('shift-detail-alert');
+            const notes = document.getElementById('signoff-notes')?.value || '';
+
+            alertEl.innerHTML = '<div class="loading"><div class="spinner"></div> Submitting sign-off...</div>';
+
+            try {
+                const res = await fetch(`${API}/shifts/signoff`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        shift_record_id: shiftId,
+                        supervisor_name: state.user.name,
+                        notes,
+                        approved
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alertEl.innerHTML = `<div class="alert alert-success">✓ ${data.message}</div>`;
+                } else {
+                    alertEl.innerHTML = `<div class="alert alert-error">${data.detail || 'Sign-off failed.'}</div>`;
+                }
+            } catch (e) {
+                alertEl.innerHTML = '<div class="alert alert-error">Could not connect to the server.</div>';
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // PAGE: EXPIRY ALERTS
+        // ══════════════════════════════════════════════════════
+        function renderExpiryAlertsPage() {
+            return `
+    <div class="page-title">Expiry Alerts</div>
+    <div class="page-subtitle">Stock flagged as approaching expiry across all warehouses.</div>
+    <div id="expiry-alerts-content">
+      <div class="loading"><div class="spinner"></div> Loading expiry alerts...</div>
+    </div>
+  `;
+        }
+
+        async function loadExpiryAlerts() {
+            const el = document.getElementById('expiry-alerts-content');
+            try {
+                const res = await fetch(`${API}/expiry/alerts`);
+                const alerts = await res.json();
+
+                if (alerts.length === 0) {
+                    el.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">No expiry alerts</div><div class="empty-sub">All stock is within acceptable expiry dates.</div></div>';
+                    return;
+                }
+
+                const rows = alerts.map(a => `
+      <tr>
+        <td>${a.brand}</td>
+        <td style="font-weight:700; color:var(--gold);">${a.quantity}</td>
+        <td>${a.expiry_date}</td>
+        <td><span class="badge ${a.days_to_expiry <= 7 ? 'badge-red' : a.days_to_expiry <= 14 ? 'badge-amber' : 'badge-gold'}">${a.days_to_expiry} days</span></td>
+        <td>${a.clerk}</td>
+        <td><span class="badge badge-amber">${a.status}</span></td>
+      </tr>
+    `).join('');
+
+                el.innerHTML = `
+      <div class="card">
+        <table class="stock-table">
+          <thead>
+            <tr><th>Brand</th><th>Quantity</th><th>Expiry Date</th><th>Days Left</th><th>Reported By</th><th>Status</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+            } catch (e) {
+                el.innerHTML = '<div class="alert alert-error">Could not load expiry alerts.</div>';
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // PAGE: MONTHLY REPORT
+        // ══════════════════════════════════════════════════════
+        function renderMonthlyReport() {
+            return `
+    <div class="page-title">Monthly Report</div>
+    <div class="page-subtitle">Generate a reconciliation report for any warehouse and month.</div>
+
+    <div class="card">
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; align-items:end;">
+        <div class="field-group" style="margin:0;">
+          <label class="field-label">Warehouse</label>
+          <select class="field-select" id="report-warehouse">
+            <option value="WH001">Main Warehouse</option>
+            <option value="WH002">Secondary Warehouse</option>
+            <option value="WH003">Distribution Warehouse</option>
+          </select>
+        </div>
+        <div class="field-group" style="margin:0;">
+          <label class="field-label">Month</label>
+          <input type="month" class="field-input" id="report-month" value="${today().substring(0, 7)}">
+        </div>
+        <button class="btn-gold" onclick="generateMonthlyReport()">Generate Report</button>
+      </div>
+    </div>
+
+    <div id="monthly-report-content"></div>
+  `;
+        }
+
+        async function generateMonthlyReport() {
+            const el = document.getElementById('monthly-report-content');
+            const warehouseId = document.getElementById('report-warehouse').value;
+            const month = document.getElementById('report-month').value;
+
+            el.innerHTML = '<div class="loading"><div class="spinner"></div> Generating report...</div>';
+
+            try {
+                const res = await fetch(`${API}/report/monthly?warehouse_id=${warehouseId}&month=${month}`);
+                const data = await res.json();
+                const s = data.summary;
+
+                const varianceRows = Object.entries(data.brand_variances || {}).map(([id, v]) => `
+      <tr>
+        <td>${v.brand_name}</td>
+        <td class="${v.total_variance === 0 ? 'variance-ok' : 'variance-flag'}">${v.total_variance > 0 ? '+' : ''}${v.total_variance}</td>
+        <td>${v.flagged_count}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="3" style="color:var(--muted); text-align:center;">No variances recorded</td></tr>';
+
+                el.innerHTML = `
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-value">${s.total_shifts}</div><div class="stat-label">Total shifts</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--green);">${s.approved_shifts}</div><div class="stat-label">Approved</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--red);">${s.flagged_shifts}</div><div class="stat-label">Flagged</div></div>
+        <div class="stat-card"><div class="stat-value">${s.total_orders}</div><div class="stat-label">Total orders</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--amber);">${s.escalated_orders}</div><div class="stat-label">Escalated</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Brand Variance Summary — ${month}</div>
+        <table class="stock-table">
+          <thead><tr><th>Brand</th><th>Total Variance</th><th>Times Flagged</th></tr></thead>
+          <tbody>${varianceRows}</tbody>
+        </table>
+      </div>
+    `;
+            } catch (e) {
+                el.innerHTML = '<div class="alert alert-error">Could not generate report.</div>';
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // PAGE: AUDIT TRAIL
+        // ══════════════════════════════════════════════════════
+        function renderAuditTrail() {
+            return `
+    <div class="page-title">Audit Trail</div>
+    <div class="page-subtitle">Every action logged with who did it, when, and the outcome.</div>
+    <div id="audit-content">
+      <div class="loading"><div class="spinner"></div> Loading audit log...</div>
+    </div>
+  `;
+        }
+
+        async function loadAuditTrail() {
+            const el = document.getElementById('audit-content');
+            try {
+                const res = await fetch(`${API}/audit?limit=50`);
+                const logs = await res.json();
+
+                if (logs.length === 0) {
+                    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🗄️</div><div class="empty-title">No audit records yet</div></div>';
+                    return;
+                }
+
+                const rows = logs.map(l => `
+      <tr>
+        <td style="font-size:11px; color:var(--muted);">${formatTime(l.created_at)}</td>
+        <td><span class="badge badge-gold">${l.event_type}</span></td>
+        <td>${l.warehouse_id || '—'}</td>
+        <td style="font-size:12px;">${l.description}</td>
+        <td>${l.clerk_name}</td>
+        <td>${l.decided_by}</td>
+        <td><span class="badge ${l.outcome === 'approved' ? 'badge-green' : l.outcome === 'flagged' ? 'badge-red' : 'badge-gray'}">${l.outcome}</span></td>
+      </tr>
+    `).join('');
+
+                el.innerHTML = `
+      <div class="card">
+        <table class="stock-table">
+          <thead><tr><th>Time</th><th>Event</th><th>Warehouse</th><th>Description</th><th>By</th><th>Decision</th><th>Outcome</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <button class="btn-outline" onclick="loadAuditTrail()">↻ Refresh</button>
+    `;
+            } catch (e) {
+                el.innerHTML = '<div class="alert alert-error">Could not load audit log.</div>';
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // PAGE: EDIT APPROVALS
+        // ══════════════════════════════════════════════════════
+        function renderEditApprovals() {
+            return `
+    <div class="page-title">Edit Requests</div>
+    <div class="page-subtitle">Review and approve or reject clerk requests to edit shift figures.</div>
+    <div class="alert alert-info">To review an edit request, go to the specific shift in All Shifts and check the edit history there. Edit approval is done per shift.</div>
+    <button class="btn-outline" onclick="navigateTo('all-shifts')">Go to All Shifts →</button>
+  `;
+        }
+
+        // ══════════════════════════════════════════════════════
+        // PAGE: MY ORDERS (CHECKER)
+        // ══════════════════════════════════════════════════════
+        function renderMyOrders() {
+            return `
+    <div class="page-title">My Orders</div>
+    <div class="page-subtitle">Orders you have checked and submitted during this shift.</div>
+    <div id="my-orders-content">
+      <div class="loading"><div class="spinner"></div> Loading orders...</div>
+    </div>
+  `;
+        }
+
+        async function loadMyOrders() {
+            const el = document.getElementById('my-orders-content');
+            try {
+                const res = await fetch(`${API}/orders?warehouse_id=${state.user.warehouse_id}`);
+                const orders = await res.json();
+
+                if (orders.length === 0) {
+                    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-title">No orders yet</div><div class="empty-sub">Orders you record will appear here.</div></div>';
+                    return;
+                }
+
+                const rows = orders.map(o => `
+      <tr>
+        <td>${o.order_number}</td>
+        <td>${o.delivery_number}</td>
+        <td>${o.client}</td>
+        <td>${o.truck}</td>
+        <td class="${o.total_variance === 0 ? 'variance-ok' : 'variance-flag'}">${o.total_variance === 0 ? '0 ✓' : o.total_variance + ' ⚠'}</td>
+        <td><span class="badge ${statusBadge(o.status)}">${o.status}</span></td>
+      </tr>
+    `).join('');
+
+                el.innerHTML = `
+      <div class="card">
+        <table class="stock-table">
+          <thead><tr><th>Order No.</th><th>Delivery No.</th><th>Client</th><th>Truck</th><th>Variance</th><th>Status</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+            } catch (e) {
+                el.innerHTML = '<div class="alert alert-error">Could not load orders.</div>';
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // MODALS
+        // ══════════════════════════════════════════════════════
+        function openModal(id) {
+            document.getElementById(id).classList.add('open');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+        }
+
+        function populateBreakageBrands() {
+            const sel = document.getElementById('breakage-brand');
+            sel.innerHTML = state.brands.map(b => `<option value="${b.id}" data-name="${b.name}">${b.name}</option>`).join('');
+        }
+
+        function populateExpiryBrands() {
+            const sel = document.getElementById('expiry-brand');
+            sel.innerHTML = state.brands.map(b => `<option value="${b.id}" data-name="${b.name}">${b.name}</option>`).join('');
+        }
+
+        function populateEditBrands() {
+            const sel = document.getElementById('edit-brand');
+            sel.innerHTML = state.brands.map(b => `<option value="${b.id}" data-name="${b.name}">${b.name}</option>`).join('');
+        }
+
+        function openEditModal(shiftId) {
+            populateEditBrands();
+            openModal('modal-edit');
+            document.getElementById('modal-edit').dataset.shiftId = shiftId;
+        }
+
+        async function submitBreakage() {
+            const brandEl = document.getElementById('breakage-brand');
+            const qty = parseInt(document.getElementById('breakage-qty').value) || 0;
+            const type = document.getElementById('breakage-type').value;
+            const desc = document.getElementById('breakage-desc').value.trim();
+
+            if (!qty) { alert('Please enter a quantity.'); return; }
+            if (!state.activeShiftId) { alert('No active shift. Open a shift first.'); return; }
+
+            try {
+                const res = await fetch(`${API}/breakages/record`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        shift_record_id: state.activeShiftId,
+                        warehouse_id: state.user.warehouse_id,
+                        brand_id: brandEl.value,
+                        brand_name: brandEl.options[brandEl.selectedIndex].dataset.name || brandEl.value,
+                        quantity: qty,
+                        reason: type,
+                        description: desc,
+                        clerk_name: state.user.name
+                    })
+                });
+
+                const data = await res.json();
+                closeModal('modal-breakage');
+
+                const alertEl = document.getElementById('breakage-page-alert') || document.getElementById('close-shift-alert');
+                if (alertEl) alertEl.innerHTML = `<div class="alert alert-success">✓ ${data.message}</div>`;
+            } catch (e) {
+                alert('Could not record breakage. Check your connection.');
+            }
+        }
+
+        async function submitExpiry() {
+            const brandEl = document.getElementById('expiry-brand');
+            const qty = parseInt(document.getElementById('expiry-qty').value) || 0;
+            const expiryDate = document.getElementById('expiry-date').value;
+
+            if (!qty || !expiryDate) { alert('Please fill in all fields.'); return; }
+            if (!state.activeShiftId) { alert('No active shift.'); return; }
+
+            try {
+                const res = await fetch(`${API}/expiry/record`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        shift_record_id: state.activeShiftId,
+                        warehouse_id: state.user.warehouse_id,
+                        brand_id: brandEl.value,
+                        brand_name: brandEl.options[brandEl.selectedIndex].dataset.name || brandEl.value,
+                        quantity: qty,
+                        expiry_date: expiryDate,
+                        clerk_name: state.user.name
+                    })
+                });
+
+                const data = await res.json();
+                closeModal('modal-expiry');
+
+                const alertEl = document.getElementById('close-shift-alert');
+                if (alertEl) alertEl.innerHTML = `<div class="alert alert-success">✓ ${data.message}</div>`;
+            } catch (e) {
+                alert('Could not record expiry alert.');
+            }
+        }
+
+        async function submitEditRequest() {
+            const modal = document.getElementById('modal-edit');
+            const shiftId = modal.dataset.shiftId;
+            const brandEl = document.getElementById('edit-brand');
+            const field = document.getElementById('edit-field').value;
+            const original = parseInt(document.getElementById('edit-original').value) || 0;
+            const corrected = parseInt(document.getElementById('edit-corrected').value) || 0;
+            const reason = document.getElementById('edit-reason').value.trim();
+
+            if (!reason) { alert('A reason is required for all post-reconciliation edits.'); return; }
+            if (original === corrected) { alert('The original and corrected values are the same. No edit needed.'); return; }
+
+            try {
+                const res = await fetch(`${API}/shifts/edit/request`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        shift_record_id: shiftId,
+                        warehouse_id: state.user.warehouse_id,
+                        field_edited: field,
+                        brand_id: brandEl.value,
+                        brand_name: brandEl.options[brandEl.selectedIndex].dataset.name || brandEl.value,
+                        original_value: original,
+                        edited_value: corrected,
+                        reason,
+                        edited_by: state.user.name
+                    })
+                });
+
+                const data = await res.json();
+                closeModal('modal-edit');
+                alert('Edit request submitted. The supervisor will be notified via Slack.');
+            } catch (e) {
+                alert('Could not submit edit request.');
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // UTILITIES
+        // ══════════════════════════════════════════════════════
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function today() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function formatTime(iso) {
+            if (!iso) return '—';
+            try {
+                return new Date(iso).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+            } catch { return iso; }
+        }
+
+        function capitalize(str) {
+            return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+        }
+
+        function statusBadge(status) {
+            const map = {
+                open: 'badge-green',
+                pending_approval: 'badge-amber',
+                flagged: 'badge-red',
+                approved: 'badge-green',
+                dispatched: 'badge-green',
+                escalated: 'badge-red',
+                in_transit: 'badge-amber',
+                received: 'badge-green',
+            };
+            return map[status] || 'badge-gray';
+        }
+
+        // ══════════════════════════════════════════════════════
+        // INIT — check for saved session
+        // ══════════════════════════════════════════════════════
+        const savedUser = sessionStorage.getItem('ss_user');
+        if (savedUser) {
+            state.user = JSON.parse(savedUser);
+            selectedRole = state.user.role;
+            launchApp();
+        }
+    </script>
+</body>
+
+</html>
